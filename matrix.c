@@ -140,9 +140,8 @@ void matrix_mult(struct matrix *a, struct matrix *b) {
   tmp = new_matrix(4, 1);
   
   for (c=0; c < b->cols; c++)  {
-    for (r=0; r < 4; r++) {
+    for (r=0; r < 4; r++) 
       tmp->m[r][0] = b->m[r][c];
-    }
 
     for (r=0; r < 4; r++) {
       b->m[r][c] =  a->m[r][0] * tmp->m[0][0] + 
@@ -151,8 +150,10 @@ void matrix_mult(struct matrix *a, struct matrix *b) {
 	a->m[r][3] * tmp->m[3][0];
     }
   }
+  
   free_matrix(tmp);
 }
+
 
 
 /*-------------- void copy_matrix() --------------

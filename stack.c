@@ -47,9 +47,8 @@ void push( struct stack *s ) {
 
   struct matrix *m;
   m = new_matrix(4, 4);
-
+  
   if ( s->top == s->size - 1 ) {
-
     s->data = (struct matrix **)realloc( s->data, (s->size + STACK_SIZE)
 					 * sizeof(struct matrix *));
     s->size = s->size + STACK_SIZE;

@@ -143,7 +143,7 @@ that format.
 jdyrlandweaver
 ====================*/
 void save_extension( screen s, char *file) {
-
+  
   int x, y;
   FILE *f;
   char line[256];

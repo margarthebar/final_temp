@@ -1,5 +1,3 @@
-frames 2
-basename bot
 //body
 push
 move 250 250 0
@@ -33,3 +31,5 @@ push
 move -100 -150 0
 rotate x 20
 box 0 0 20 60 100 40
+display
+quit
