@@ -89,7 +89,11 @@ jdyrlandweaver
 ====================*/
 void draw_polygons( struct matrix *polygons, screen s, color c ) {
   
-  int i;  
+  int i;
+  int total;
+  int count;
+  total = 0;
+  count = 0;
   for( i=0; i < polygons->lastcol-2; i+=3 ) {
 
     if ( calculate_dot( polygons, i ) < 0 ) {
@@ -109,7 +113,6 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
 		 polygons->m[1][i],
 		 s, c);
 
-          //printf("\n0:(%f,%f)\n1:(%f,%f)\n2:(%f,%f)\n",polygons->m[0][i],polygons->m[1][i],polygons->m[0][i+1],polygons->m[1][i+1],polygons->m[0][i+2],polygons->m[1][i+2]);
       /////////////////SCANLINE CONVERSION//////////////////
 
       ////Designate points TOP, BOTTOM, and MIDDLE////
@@ -124,6 +127,19 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
       M = (ans%100)/10;
       B = (ans%10);
 
+      while(!(polygons->m[1][i+T] >= polygons->m[1][i+M] && polygons->m[1][i+M] >= polygons->m[1][i+B])){
+	if(polygons->m[1][i+T] < polygons->m[1][i+M]){
+	  int temp = T;
+	  T = M;
+	  M = temp;
+	}
+	if(polygons->m[1][i+M] < polygons->m[1][i+B]){
+	  int temp = M;
+	  M = B;
+	  B = temp;
+	}
+      }
+      
       if(polygons->m[1][i+T] == polygons->m[1][i+B]){
 	printf("things are going wrong\n");
       }
@@ -143,6 +159,14 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
       }
 
       //printf("T:%d\nM:%d\nB:%d\n",T,M,B);
+      total++;
+      if(polygons->m[1][i+T] >= polygons->m[1][i+M] && polygons->m[1][i+M] >= polygons->m[1][i+B]){
+	//printf("Correct!\n");
+	count++;
+      }else if(polygons->m[1][i+T]==polygons->m[1][i+B]){
+	printf("horizontal line\n");
+      }
+      //printf("%d/%d\n",count,total);
 
       ///////////Set x0, y0, x1, y1, and d0////////////
       double x0, y0, x1, y1, d0, d1;
@@ -159,89 +183,107 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
       if( (polygons->m[1][i+B] < polygons->m[1][i+M]) && (polygons->m[1][i+M] < polygons->m[1][i+T]) ){
 	d1 = (polygons->m[0][i+M] - polygons->m[0][i+B])/(polygons->m[1][i+M] - polygons->m[1][i+B]);
 	while(y0 <= polygons->m[1][i+M]){
-	  srand(time(NULL));
-	  int r = rand();
-	  r = r%50;
-	  printf("r: %d\n",r);
-	  c.blue = 0;
-	  c.red = 0;
-	  c.green = 0;
-	  if(i%5==0){
-	    c.red = 255 - r;
-	  }else if(i%3==1){
-	    c.blue = 255 - r;
-	  }else{
-	    c.green = 255 - r;
-	  }
+	  int colors[5] = {0,64,128,192,255};
+	  c.red = colors[i%5];
+	  c.blue = colors[(i+1)%5];
+	  c.green = colors[(i-1)%5];
 	  x0+=d0;
 	  x1+=d1;
 	  y0++;
 	  y1++;
-	  if(x0 < polygons->m[0][i] && x0 < polygons->m[0][i+1] && x0 < polygons->m[0][i+2] && x1 < polygons->m[0][i] && x1 < polygons->m[0][i+1] && x1 < polygons->m[0][i+2]){
-	    printf("\nCase 1: (%f,%f),(%f,%f),(%f,%f)\n", polygons->m[0][i],polygons->m[1][i],polygons->m[0][i+1],polygons->m[1][i+1],polygons->m[0][i+2],polygons->m[1][i+2]);
-	    printf("d0: %f, d1: %f, xT: %f, x0: %f, x1: %f\n",d0,d1,polygons->m[0][i+T],x0,x1);
-	  }
+	 
 	  draw_line(x0,y0,x1,y1,s,c);
 	}
 	d1 = (polygons->m[0][i+T] - polygons->m[0][i+M])/(polygons->m[1][i+T] - polygons->m[1][i+M]);
+	
+	int colors[5] = {0,64,128,192,255};
 	while(y0 < polygons->m[1][i+T]){
-	  srand(time(NULL));
-	  int r = rand();
-	  r = r%50-20;
-	  printf("r: %d\n",r);
-	  c.blue = 0;
-	  c.red = 0;
-	  c.green = 0;
-	  if(i%5==0){
-	    c.red = 255 - r;
-	  }else if(i%3==1){
-	    c.blue = 255 - r;
-	  }else{
-	    c.green = 255 - r;
-	  }
+	  c.red = colors[i%5];
+	  c.blue = colors[(i+1)%5];
+	  c.green = colors[(i-1)%5];
 	  x0+=d0;
 	  x1+=d1;
 	  y0++;
 	  y1++;
-	  if(x0 < polygons->m[0][i] && x0 < polygons->m[0][i+1] && x0 < polygons->m[0][i+2] && x1 < polygons->m[0][i] && x1 < polygons->m[0][i+1] && x1 < polygons->m[0][i+2]){
-	    printf("\nCase 2: (%f,%f),(%f,%f),(%f,%f)\n", polygons->m[0][i],polygons->m[1][i],polygons->m[0][i+1],polygons->m[1][i+1],polygons->m[0][i+2],polygons->m[1][i+2]);
-	    printf("d0: %f, d1: %f, xT: %f, x0: %f, x1: %f\n",d0,d1,polygons->m[0][i+T],x0,x1);
-	  }
+	 
 	  draw_line(x0,y0,x1,y1,s,c);
 	}
       }else{
 	if(polygons->m[1][i+B] == polygons->m[1][i+M]){
+	  //printf("T>M==B\n");
 	  //x1 is on MT
 	  x1 = polygons->m[0][i+M];
 	  y1 = polygons->m[1][i+M];
 	  d1 = (polygons->m[0][i+T] - polygons->m[0][i+M])/(polygons->m[1][i+T] - polygons->m[1][i+M]);
+	  //printf("d1 is %f\n",d1);
 	}else if(polygons->m[1][i+T] == polygons->m[1][i+M]){
+	  //printf("T==M>B\n");
 	  //x1 is on BM
 	  d1 = (polygons->m[0][i+M] - polygons->m[0][i+B])/(polygons->m[1][i+M] - polygons->m[1][i+B]);
+	  //printf("d1 is %f\n",d1);
 	}
 	while(y0 < polygons->m[1][i+T]){
-	  srand(time(NULL));
-	  int r = rand();
-	  r = r%50;
-	  printf("r: %d\n",r);
-	  c.blue = 0;
-	  c.red = 0;
-	  c.green = 0;
-	  if(i%5==0){
-	    c.red = 255 - r;
-	  }else if(i%3==1){
-	    c.blue = 255 - r;
-	  }else{
-	    c.green = 255 - r;
-	  }
+	  int colors[5] = {0,64,128,192,255};
+	  c.red = colors[i%5];
+	  c.blue = colors[(i+1)%5];
+	  c.green = colors[(i-1)%5];
 	  x0+=d0;
 	  x1+=d1;
 	  y0++;
 	  y1++;
-	  if(x0 < polygons->m[0][i] && x0 < polygons->m[0][i+1] && x0 < polygons->m[0][i+2] && x1 < polygons->m[0][i] && x1 < polygons->m[0][i+1] && x1 < polygons->m[0][i+2]){
-	    printf("\nCase 3: (%f,%f),(%f,%f),(%f,%f)\n", polygons->m[0][i],polygons->m[1][i],polygons->m[0][i+1],polygons->m[1][i+1],polygons->m[0][i+2],polygons->m[1][i+2]);
-	    printf("d0: %f, d1: %f, xT: %f, x0: %f, x1: %f\n",d0,d1,polygons->m[0][i+T],x0,x1);
+	  int dif01,dif02,dif12,ans,Rx,Mx,Lx;
+	  dif01 = polygons->m[0][i] - polygons->m[0][i+1];
+	  dif02 = polygons->m[0][i] - polygons->m[0][i+2];
+	  dif12 = polygons->m[0][i+1] - polygons->m[0][i+2];
+	  ans = order_points(dif01,dif02,dif12);
+	  Rx = ans/100;
+	  Mx = (ans%100)/10;
+	  Lx = ans%10;
+	  
+	  if(x0<polygons->m[0][i+Lx] || x0>polygons->m[0][i+Rx]){
+	    /*
+	    printf("x0 is out of range. d0 is %f. Lx is %f. Rx is %f. x0 is %f\n",d0,polygons->m[0][i+Lx],polygons->m[0][i+Rx],x0);
+	    	printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
+		printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
+		printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
+	    */
+	    //printf("x0 is out of range\n");
+	    if(polygons->m[1][i+T] < polygons->m[1][i+M]){
+	      printf("T < M\n");
+	    }
+	    if(polygons->m[1][i+T] < polygons->m[1][i+B]){
+	      printf("T < B\n");
+	    }
+	    if(polygons->m[1][i+M] < polygons->m[1][i+B]){
+	      printf("M < B\n");
+	    }
+	    if(polygons->m[1][i+T] == polygons->m[1][i+B]){
+	      printf("T == B\n");
+	    }
 	  }
+	  if(x1<polygons->m[0][i+Lx] || x1>polygons->m[0][i+Rx]){
+
+	    /*
+	    printf("x1 is out of range. d1 is %f. Lx is %f. Rx is %f. x1 is %f\n",d1,polygons->m[0][i+Lx],polygons->m[0][i+Rx],x1);
+	    printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
+	    printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
+	    printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
+	    */
+	    printf("x1 is out of range\n");
+	    if(polygons->m[1][i+T] < polygons->m[1][i+M]){
+	      printf("T < M\n");
+	    }
+	    if(polygons->m[1][i+T] < polygons->m[1][i+B]){
+	      printf("T < B\n");
+	    }
+	    if(polygons->m[1][i+M] < polygons->m[1][i+B]){
+	      printf("M < B\n");
+	    }
+	    if(polygons->m[1][i+T] == polygons->m[1][i+B]){
+	      printf("T == B\n");
+	    }
+	  }
+	  
 	  draw_line(x0,y0,x1,y1,s,c);
 	}
       }
