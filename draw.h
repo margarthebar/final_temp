@@ -5,6 +5,12 @@
 
 #define MAX_STEPS 100
 
+void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M, int B);
+
+int order(struct matrix *polyongs, int i, int xy);
+
+void scanline_convert(struct matrix *polygons, screen s, color c, int i);
+
 void draw_line(int x0, int y0, 
 	       int x1, int y1, 
 	       screen s, color c);

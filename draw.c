@@ -8,43 +8,227 @@
 #include "matrix.h"
 #include "gmath.h"
 
-int order_points(int d01, int d02, int d12){
+void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M, int B){
+  float x0, y0, x1, y1, d0, d1, Tx, Ty, Mx, My, Bx, By;
+
+  x0 = polygons->m[0][i+B];
+  y0 = polygons->m[1][i+B];
+  x1 = polygons->m[0][i+B];
+  y1 = polygons->m[1][i+B];
+
+  Tx = polygons->m[0][i+T];
+  Ty = polygons->m[1][i+T];
+  Mx = polygons->m[0][i+M];
+  My = polygons->m[1][i+M];
+  Bx = polygons->m[0][i+B];
+  By = polygons->m[1][i+B];
+
   int ans;
-  if(d01>0){
-    if(d02<0){
-      //+--:201
-      ans = 201;
-    }else{
-      if(d12>0){
-	//+++:012
-	ans = 12;
-      }else{
-	//++-:021
-	//++0:021
-	//+0-:021
-	ans = 21;
+  float Rx, Cx, Lx;
+  ans = order(polygons, i, 0);
+  Rx = polygons->m[0][i + ans/100];
+  Cx = polygons->m[0][i + (ans%100)/10];
+  Lx = polygons->m[0][i + ans%10];
+
+  //printf("(%f,%f),(%f,%f),(%f,%f)\n",Tx,Ty,Mx,My,Bx,By);
+
+  d0 = (Tx - Bx)/(Ty - By);
+  //////////Start moving the points///////////////
+  if( (By < My) && (My < Ty) ){
+
+    d1 = (Mx - Bx)/(My - By);
+    while(y0 < My){
+      int colors[5] = {0,64,128,192,255};
+      c.red = colors[i%5];
+      c.blue = colors[(i+1)%5];
+      c.green = colors[(i-1)%5];
+
+      draw_line(x0,y0,x1,y1,s,c);
+
+      d0 = (Tx - x0)/(Ty - y0);
+      d1 = (Mx - x1)/(My - y1);
+      x0+=d0;
+      x1+=d1;
+      y0++;
+      y1++;
+
+      if(x0 < Lx){
+	x0 = Lx;
+      }else if(x0 > Rx){
+	x0 = Rx;
       }
+      if(x1 < Lx){
+	x1 = Lx;
+      }else if(x1 > Rx){
+	x1 = Rx;
+      }
+
+
+    }
+
+    d1 = (Tx - Mx)/(Ty - My);
+
+    /*
+    if(d0>0){
+      x0 = Mx;
+    }else{
+      x1 = Mx;
+    }
+    */
+
+    int colors[5] = {0,64,128,192,255};
+    while(y0 <= Ty){
+      c.red = colors[i%5];
+      c.blue = colors[(i+1)%5];
+      c.green = colors[(i-1)%5];
+
+      draw_line(x0,y0,x1,y1,s,c);
+
+      d0 = (Tx - x0)/(Ty - y0);
+      d1 = (Tx - x1)/(Ty - y1);
+      x0+=d0;
+      x1+=d1;
+      y0++;
+      y1++;
+
+      if(x0 < Lx){
+	x0 = Lx;
+      }else if(x0 > Rx){
+	x0 = Rx;
+      }
+      if(x1 < Lx){
+	x1 = Lx;
+      }else if(x1 > Rx){
+	x1 = Rx;
+      }
+
     }
   }else{
-    if(d02>0){
-      //-++:102
-      //0++:102
-      ans = 102;
+    if(By == My){
+      //x1 is on MT
+      x1 = Mx;
+      y1 = My;
+      d1 = (Tx - Mx)/(Ty - My);
+    }else if(Ty == My){
+      //x1 is on BM
+      d1 = (Mx - Bx)/(My - By);
     }else{
-      if(d12<0){
-	//---:210
-	//0--:210
-        ans = 210;
-      }else{
-	//--+:120
-	//-0+:120
-	//--0:120
-	ans = 120;
+      printf("STRAIGHT LINE\n");
+    }
+    while(y0 <= Ty){
+      int colors[5] = {0,64,128,192,255};
+      c.red = colors[i%5];
+      c.blue = colors[(i+1)%5];
+      c.green = colors[(i-1)%5];
+      d0 = (Tx - x0)/(Ty - y0);
+      if(By==My){
+	d1 = (Tx - x1)/(Ty - y1);
+      }else if(Ty==My){
+	d1 = (Mx - x1)/(My - y1);
       }
+      draw_line(x0,y0,x1,y1,s,c);
+      x0+=d0;
+      x1+=d1;
+      y0++;
+      y1++;
+
+      if(x0 < Lx){
+	x0 = Lx;
+      }else if(x0 > Rx){
+	x0 = Rx;
+      }
+      if(x1 < Lx){
+	x1 = Lx;
+      }else if(x1 > Rx){
+	x1 = Rx;
+      }
+      /*
+      if(x0 < Lx){
+	printf("x0 too far left\n");
+	printf("  Lx:%d, Mx:%d, Rx:%d, x0:%f\n",Lx,Mx,Rx,x0);
+      }else if(x0 > Rx){
+	printf("x0 too far right\n");
+	printf("  Lx:%d, Mx:%d, Rx:%d, x0:%f\n",Lx,Mx,Rx,x0);
+      }
+
+      if(x1 < Lx){
+	printf("x1 too far left\n");
+	printf("  Lx:%d, Mx:%d, Rx:%d, x1:%f\n",Lx,Mx,Rx,x1);
+      }else if(x1 > Rx){
+	printf("x1 too far right\n");
+	printf("  Lx:%d, Mx:%d, Rx:%d, x1:%f\n",Lx,Mx,Rx,x1);
+      }
+      */
+
+      //draw_line(x0,y0,x1,y1,s,c);
     }
   }
+}
+
+int order(struct matrix *polygons, int i, int xy){
+ int T, M, B;
+
+  T = 0;
+  M = 1;
+  B = 2;
+
+  int temp;
+  if(polygons->m[xy][i+M] < polygons->m[xy][i+B]){
+    temp = M;
+    M = B;
+    B = temp;
+  }
+  if(polygons->m[xy][i+T] < polygons->m[xy][i+M]){
+    temp = T;
+    T = M;
+    M = temp;
+  }
+  if(polygons->m[xy][i+M] < polygons->m[xy][i+B]){
+    temp = M;
+    M = B;
+    B = temp;
+  }
+  if(polygons->m[xy][i+T]==polygons->m[xy][i+M]){
+    if(xy==1 && (polygons->m[0][i+T]<polygons->m[0][i+M])){
+      temp = T;
+      T = M;
+      M = temp;
+    }
+  }
+  if(polygons->m[1][i+B]==polygons->m[1][i+M]){
+    if(xy==1 && (polygons->m[0][i+M]<polygons->m[0][i+B])){
+      temp = B;
+      B = M;
+      M = temp;
+    }
+  }
+
+  int ans = (100*T) + (10*M) + B;
   return ans;
 }
+
+void scanline_convert(struct matrix *polygons, screen s, color c, int i){
+  /////////////////SCANLINE CONVERSION//////////////////
+  ////Designate points TOP, BOTTOM, and MIDDLE////
+  int order_indices = order(polygons,i,1);
+  int T, M, B;
+
+  T = order_indices/100;
+  M = (order_indices%100)/10;
+  B = order_indices%10;
+  ////////////////////////////////////////////////
+  //Check to see if everything is in order
+  if(!(polygons->m[1][i+T] >= polygons->m[1][i+M] && polygons->m[1][i+M] >= polygons->m[1][i+B])){
+    printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
+    printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
+    printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
+  }
+
+  ///////////Set x0, y0, x1, y1, and d0////////////
+  move_points(polygons,s,c,i,T,M,B);
+}
+
+
 
 
 /*======== void add_polygon() ==========
@@ -90,13 +274,10 @@ jdyrlandweaver
 void draw_polygons( struct matrix *polygons, screen s, color c ) {
   
   int i;
-  int total;
-  int count;
-  total = 0;
-  count = 0;
   for( i=0; i < polygons->lastcol-2; i+=3 ) {
 
     if ( calculate_dot( polygons, i ) < 0 ) {
+      /*
       draw_line( polygons->m[0][i],
 		 polygons->m[1][i],
 		 polygons->m[0][i+1],
@@ -112,191 +293,13 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
 		 polygons->m[0][i],
 		 polygons->m[1][i],
 		 s, c);
+      */
 
-      /////////////////SCANLINE CONVERSION//////////////////
-
-      ////Designate points TOP, BOTTOM, and MIDDLE////
-      int T, M, B;
-
-      T = 0;
-      M = 1;
-      B = 2;
-
-      int temp;
-      if(polygons->m[1][i+M] < polygons->m[1][i+B]){
-	temp = M;
-	M = B;
-	B = temp;
-      }
-      if(polygons->m[1][i+T] < polygons->m[1][i+M]){
-	temp = T;
-	T = M;
-	M = temp;
-      }
-      if(polygons->m[1][i+M] < polygons->m[1][i+B]){
-	temp = M;
-	M = B;
-	B = temp;
-      }
-      if(polygons->m[1][i+T]==polygons->m[1][i+M]){
-	if(polygons->m[0][i+T]<polygons->m[0][i+M]){
-	  temp = T;
-	  T = M;
-	  M = temp;
-	}
-      }
-       if(polygons->m[1][i+B]==polygons->m[1][i+M]){
-	if(polygons->m[0][i+M]<polygons->m[0][i+B]){
-	  temp = B;
-	  B = M;
-	  M = temp;
-	}
-      }
-
-      
-      if(!(polygons->m[1][i+T] >= polygons->m[1][i+M] && polygons->m[1][i+M] >= polygons->m[1][i+B])){
-	printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
-	printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
-	printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
-      }
-      
-      total++;
-      if(polygons->m[1][i+T] >= polygons->m[1][i+M] && polygons->m[1][i+M] >= polygons->m[1][i+B]){
-	//printf("Correct!\n");
-	count++;
-      }else if(polygons->m[1][i+T]==polygons->m[1][i+B]){
-	printf("horizontal line\n");
-      }else{
-	
-      }
-      //printf("%d/%d\n",count,total);
-
-      ///////////Set x0, y0, x1, y1, and d0////////////
-      double x0, y0, x1, y1, d0, d1;
-      
-      x0 = polygons->m[0][i+B];
-      y0 = polygons->m[1][i+B];
-      x1 = polygons->m[0][i+B];
-      y1 = polygons->m[1][i+B];
-
-      //printf("Top:(%f,%f)\nMiddle:(%f,%f)\nBottom:(%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T],polygons->m[0][i+M],polygons->m[1][i+M],x0,y0);
- 
-      d0 = (polygons->m[0][i+T] - polygons->m[0][i+B])/(polygons->m[1][i+T] - polygons->m[1][i+B]);
-      //////////Start moving the points///////////////
-      if( (polygons->m[1][i+B] < polygons->m[1][i+M]) && (polygons->m[1][i+M] < polygons->m[1][i+T]) ){
-	d1 = (polygons->m[0][i+M] - polygons->m[0][i+B])/(polygons->m[1][i+M] - polygons->m[1][i+B]);
-	while(y0 <= polygons->m[1][i+M]){
-	  int colors[5] = {0,64,128,192,255};
-	  c.red = colors[i%5];
-	  c.blue = colors[(i+1)%5];
-	  c.green = colors[(i-1)%5];
-	  x0+=d0;
-	  x1+=d1;
-	  y0++;
-	  y1++;
-	 
-	  draw_line(x0,y0,x1,y1,s,c);
-	}
-	d1 = (polygons->m[0][i+T] - polygons->m[0][i+M])/(polygons->m[1][i+T] - polygons->m[1][i+M]);
-	
-	int colors[5] = {0,64,128,192,255};
-	while(y0 < polygons->m[1][i+T]){
-	  c.red = colors[i%5];
-	  c.blue = colors[(i+1)%5];
-	  c.green = colors[(i-1)%5];
-	  x0+=d0;
-	  x1+=d1;
-	  y0++;
-	  y1++;
-	 
-	  draw_line(x0,y0,x1,y1,s,c);
-	}
-      }else{
-	if(polygons->m[1][i+B] == polygons->m[1][i+M]){
-	  //printf("T>M==B\n");
-	  //x1 is on MT
-	  x1 = polygons->m[0][i+M];
-	  y1 = polygons->m[1][i+M];
-	  d1 = (polygons->m[0][i+T] - polygons->m[0][i+M])/(polygons->m[1][i+T] - polygons->m[1][i+M]);
-	  //printf("d1 is %f\n",d1);
-	}else if(polygons->m[1][i+T] == polygons->m[1][i+M]){
-	  //printf("T==M>B\n");
-	  //x1 is on BM
-	  d1 = (polygons->m[0][i+M] - polygons->m[0][i+B])/(polygons->m[1][i+M] - polygons->m[1][i+B]);
-	  //printf("d1 is %f\n",d1);
-	}
-	while(y0 < polygons->m[1][i+T]){
-	  int colors[5] = {0,64,128,192,255};
-	  c.red = colors[i%5];
-	  c.blue = colors[(i+1)%5];
-	  c.green = colors[(i-1)%5];
-	  x0+=d0;
-	  x1+=d1;
-	  y0++;
-	  y1++;
-	  int dif01,dif02,dif12,ans,Rx,Mx,Lx;
-	  dif01 = polygons->m[0][i] - polygons->m[0][i+1];
-	  dif02 = polygons->m[0][i] - polygons->m[0][i+2];
-	  dif12 = polygons->m[0][i+1] - polygons->m[0][i+2];
-	  ans = order_points(dif01,dif02,dif12);
-	  Rx = ans/100;
-	  Mx = (ans%100)/10;
-	  Lx = ans%10;
-	  
-	  if(x0<polygons->m[0][i+Lx] || x0>polygons->m[0][i+Rx]){
-	    /*
-	    printf("x0 is out of range. d0 is %f. Lx is %f. Rx is %f. x0 is %f\n",d0,polygons->m[0][i+Lx],polygons->m[0][i+Rx],x0);
-	    	printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
-		printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
-		printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
-	    */
-	    printf("x0 is out of range\n");
-	    if(polygons->m[1][i+T] < polygons->m[1][i+M]){
-	      printf("T < M\n");
-	    }
-	    if(polygons->m[1][i+T] < polygons->m[1][i+B]){
-	      printf("T < B\n");
-	    }
-	    if(polygons->m[1][i+M] < polygons->m[1][i+B]){
-	      printf("M < B\n");
-	    }
-	    if(polygons->m[1][i+T] == polygons->m[1][i+B]){
-	      printf("T == B\n");
-	    }
-	  }
-	  if(x1<polygons->m[0][i+Lx] || x1>polygons->m[0][i+Rx]){
-
-	    /*
-	    printf("x1 is out of range. d1 is %f. Lx is %f. Rx is %f. x1 is %f\n",d1,polygons->m[0][i+Lx],polygons->m[0][i+Rx],x1);
-	    printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
-	    printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
-	    printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
-	    */
-	    printf("x1 is out of range\n");
-	    printf("   Top: (%f,%f)\n",polygons->m[0][i+T],polygons->m[1][i+T]);
-	    printf("Middle: (%f,%f)\n",polygons->m[0][i+M],polygons->m[1][i+M]);
-	    printf("Bottom: (%f,%f)\n\n",polygons->m[0][i+B],polygons->m[1][i+B]);
-	    printf("d1: %f\n\n",d1);
-	    if(polygons->m[1][i+T] < polygons->m[1][i+M]){
-	      printf("T < M\n");
-	    }
-	    if(polygons->m[1][i+T] < polygons->m[1][i+B]){
-	      printf("T < B\n");
-	    }
-	    if(polygons->m[1][i+M] < polygons->m[1][i+B]){
-	      printf("M < B\n");
-	    }
-	    if(polygons->m[1][i+T] == polygons->m[1][i+B]){
-	      printf("T == B\n");
-	    }
-	  }
-	  
-	  draw_line(x0,y0,x1,y1,s,c);
-	}
-      }
-      ////////////////////////////////////////////////
+      scanline_convert(polygons, s, c, i);
+      //printf("Finished i:%d, total:%d\n",i,polygons->lastcol-2);
     }
   }
+  printf("finished drawing\n");
 }
 
 
