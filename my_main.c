@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <float.h>
 #include "parser.h"
 #include "symtab.h"
 #include "y.tab.h"
@@ -363,6 +364,17 @@ void my_main( int polygons ) {
 	vn = vn-> next;
       }
     }
+
+    //initialize z values
+    z_values = *new_matrix(XRES,YRES);
+    int x,y;
+    for(y=0; y<YRES; y++){
+      for(x=0; x<XRES; x++){
+	//set each pixel to minimum value
+	z_values->m[x][y] = DBL_MIN;
+      }
+    }
+    
     
     for (i=0;i<lastop;i++) {
   

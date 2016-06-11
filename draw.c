@@ -8,6 +8,8 @@
 #include "matrix.h"
 #include "gmath.h"
 
+struct matrix *z_values;
+
 void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M, int B){
   float x0, y0, x1, y1, d0, d1, Tx, Ty, Mx, My, Bx, By;
 
