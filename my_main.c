@@ -329,6 +329,10 @@ void my_main( int polygons ) {
   screen t;
   color g;
 
+  color ca;
+  float kar,kdr,ksr,kag,kdg,ksg,kab,kdb,ksb,r_intensity,g_intensity,b_intensity;
+  int index;
+
   struct vary_node **knobs;
   struct vary_node *vn;
   char frame_name[128];
@@ -353,6 +357,7 @@ void my_main( int polygons ) {
     s = new_stack();
     tmp = new_matrix(4, 1000);
     clear_screen( t );
+    initialize_zs();
 
     //if there are multiple frames, set the knobs
     if ( num_frames > 1 ) {
@@ -365,8 +370,9 @@ void my_main( int polygons ) {
       }
     }
 
+    /*
     //initialize z values
-    z_values = *new_matrix(XRES,YRES);
+    //z_values = new_matrix(XRES,YRES);
     int x,y;
     for(y=0; y<YRES; y++){
       for(x=0; x<XRES; x++){
@@ -374,7 +380,7 @@ void my_main( int polygons ) {
 	z_values->m[x][y] = DBL_MIN;
       }
     }
-    
+    */
     
     for (i=0;i<lastop;i++) {
   
@@ -400,6 +406,7 @@ void my_main( int polygons ) {
 	//apply the current top origin
 	matrix_mult( s->data[ s->top ], tmp );
 	draw_polygons( tmp, t, g );
+	//draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 
@@ -412,6 +419,7 @@ void my_main( int polygons ) {
 		   step);
 	matrix_mult( s->data[ s->top ], tmp );
 	draw_polygons( tmp, t, g );
+	//draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 
@@ -424,6 +432,7 @@ void my_main( int polygons ) {
 		 op[i].op.box.d1[2]);
 	matrix_mult( s->data[ s->top ], tmp );
 	draw_polygons( tmp, t, g );
+	//draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 
@@ -514,6 +523,54 @@ void my_main( int polygons ) {
 	break;
       case DISPLAY:
 	display( t );
+	break;
+      case LIGHT:
+	//light r g b x y z
+	//creates a "light" datastructure with rgb values r,g,b at location x,y,z.
+	//This is inserted into the symbol table
+        for(j=0; j<lastsym; j++){
+	  if ( symtab[j].type == SYM_LIGHT ){
+	    index = j;
+	  }
+	}
+        add_light(symtab[index].s.l->l[0],symtab[index].s.l->l[1],symtab[index].s.l->l[2],
+		  symtab[index].s.l->c[0],symtab[index].s.l->c[1],symtab[index].s.l->c[2]);
+	break;
+      case AMBIENT:
+	//ambient r g b
+	//specifies how much ambient light is in the scene
+	//set_value( lookup_symbol( op[i].op.ambient.c[0] ), op[i].op.ambient.c[0]);
+	ca.red = op[i].op.ambient.c[0];
+	ca.green = op[i].op.ambient.c[1];
+	ca.blue = op[i].op.ambient.c[2];
+	set_ambient(ca);
+	break;
+      case CONSTANTS:
+	for(j=0; j<lastsym; j++){
+	  if ( symtab[j].type == SYM_CONSTANTS ){
+	    index = j;
+	  }
+	}
+
+	kar = symtab[index].s.c->r[0];
+	kdr = symtab[index].s.c->r[1];
+	ksr = symtab[index].s.c->r[2];
+
+	kag = symtab[index].s.c->g[0];
+	kdg = symtab[index].s.c->g[1];
+	ksg = symtab[index].s.c->g[2];
+
+	kab = symtab[index].s.c->b[0];
+	kdb = symtab[index].s.c->b[1];
+	ksb = symtab[index].s.c->b[2];
+
+        r_intensity = symtab[index].s.c->red;
+	g_intensity = symtab[index].s.c->green;
+	b_intensity = symtab[index].s.c->blue;
+	//printf("\nkar:%f\n\n",kar);
+
+	set_constants(kar,kdr,ksr,kag,kdg,ksg,kab,kdb,ksb,r_intensity,g_intensity,b_intensity);
+	//printf("\n again kar:%f\n\n",kar);
 	break;
       }
     }

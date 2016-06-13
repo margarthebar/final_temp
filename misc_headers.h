@@ -3,7 +3,6 @@
 
 int num_frames;
 char name[128];
-struct matrix *z_values;
 
 struct vary_node {
   

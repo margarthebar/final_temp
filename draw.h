@@ -5,20 +5,44 @@
 
 #define MAX_STEPS 100
 
-void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M, int B);
+double z_values[XRES][YRES];
 
-int order(struct matrix *polyongs, int i, int xy);
+void set_ambient(color c_ambient);
+void set_constants(float tkar,float tkdr,float tksr,
+		   float tkag,float tkdg,float tksg,
+		   float tkab,float tkdb,float tksb,
+		   float tri,float tgi,float tbi);
+
+void add_light(int l0, int l1, int l2, int c0, int c1, int c2);
+
+color calculate_Ia();
+color calculate_Id(struct matrix *polygons, screen s, color c, int i);
+color calculate_Is(struct matrix *polygons, screen s, color c, int i);
+
+void calculate_surface_normal(struct matrix *polygons, int i);
+void normalize_light(struct matrix *polygons, int i, int li);
+
+color calculate_I(struct matrix *polygons, screen s, color c, int i);
+
+void initialize_zs();
+
+void move_points(struct matrix *polygons, screen s, color c,
+		 int i, int T, int M, int B);
+
+void move_points_z(struct matrix *polygons, screen s, color c,
+		   int i, int T, int M, int B);
+
+int order(struct matrix *polygons, int i, int xy);
 
 void scanline_convert(struct matrix *polygons, screen s, color c, int i);
-void scanline_convert_z(struct matrix *polygons, screen s, color c, int i,
-			struct matrix *z_buffer);
+void scanline_convert_z(struct matrix *polygons, screen s, color c, int i);
 
 void draw_line(int x0, int y0, 
 	       int x1, int y1, 
 	       screen s, color c);
-void draw_line_z(int x0, int y0, 
-	       int x1, int y1, 
-	       screen s, color c, struct matrix *z_buffer);
+void draw_line_z(int x0, int y0, int z0, 
+		 int x1, int y1, int z1,
+	       screen s, color c);
 void add_point( struct matrix * points, 
 		 double x, double y, double z);
 void add_edge( struct matrix * points, 
@@ -30,8 +54,7 @@ void add_polygons( struct matrix * points,
 		   double x2, double y2, double z2);
 void draw_lines( struct matrix * points, screen s, color c);
 void draw_polygons( struct matrix * points, screen s, color c);
-void draw_polygons_z( struct matrix * points, screen s, color c,
-		      struct matrix *z_buffer);
+void draw_polygons_z( struct matrix * points, screen s, color c);
 
 //advanced shapes
 void add_circle( struct matrix * points, 
