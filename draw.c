@@ -21,12 +21,12 @@ void set_ambient(color c_ambient){
   ca.red = c_ambient.red;
   ca.green = c_ambient.green;
   ca.blue = c_ambient.blue;
-  printf("Ambient light: r:%d, g:%d, b:%d\n",ca.red,ca.green,ca.blue);
+  //printf("Ambient light: r:%d, g:%d, b:%d\n",ca.red,ca.green,ca.blue);
 }
 
 void set_constants(float tkar,float tkdr,float tksr,float tkag,float tkdg,
 		   float tksg,float tkab,float tkdb,float tksb,float tri,float tgi,float tbi){
-  //printf("\ntkar:%f\n\n",tkar);
+
   kar = tkar;
   kdr = tkdr;
   ksr = tksr;
@@ -39,11 +39,13 @@ void set_constants(float tkar,float tkdr,float tksr,float tkag,float tkdg,
   ri = tri;
   gi = tgi;
   bi = tbi;
+  /*
   printf("Constants:\n");
   printf("kar:%f, kdr:%f, ksr:%f\n",kar,kdr,ksr);
   printf("kag:%f, kdg:%f, ksg:%f\n",kag,kdg,ksg);
   printf("kab:%f, kdb:%f, ksb:%f\n",kab,kdb,ksb);
   printf("ri:%f, gi:%f, bi:%f\n",ri,gi,bi);
+  */
 }
 void add_light(int l0, int l1, int l2, int c0, int c1, int c2){
   lights[light_index][0] = l0;
@@ -53,7 +55,7 @@ void add_light(int l0, int l1, int l2, int c0, int c1, int c2){
   lights[light_index][4] = c1;
   lights[light_index][5] = c2;
   light_index++;
-  printf("Light %d: l:%d,%d,%d c:%d,%d,%d\n",light_index-1,l0,l1,l2,c0,c1,c2);
+  //printf("Light %d: l:%d,%d,%d c:%d,%d,%d\n",light_index-1,l0,l1,l2,c0,c1,c2);
 }
 
 color calculate_Ia(){
@@ -259,7 +261,7 @@ color calculate_I(struct matrix *polygons, screen s, color c, int i){
   Is = calculate_Is(polygons, s, c, i);
   //printf("Ia: r:%d, g:%d, b:%d\n",Ia.red,Ia.green,Ia.blue);
   //printf("Id: r:%d, g:%d, b:%d\n",Id.red,Id.green,Id.blue);
-  printf("Is: r:%d, g:%d, b:%d\n\n",Is.red,Is.green,Is.blue);
+  //printf("Is: r:%d, g:%d, b:%d\n\n",Is.red,Is.green,Is.blue);
 
   c.red = Ia.red + Id.red + Is.red;
   c.green = Ia.green + Id.green + Is.green;
@@ -274,7 +276,8 @@ void initialize_zs(){
   for(y=0; y<YRES; y++){
     for(x=0; x<XRES; x++){
       //set each pixel to minimum value
-      z_values[x][y] = DBL_MIN;
+      z_values[x][y] = DBL_MAX*-1;
+      //printf("z_values[x][y]: %f\n",z_values[x][y]);
     }
   }
 }
@@ -315,7 +318,7 @@ void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
       */
-      //c = calculate_I(polygons, s, c, i);
+      c = calculate_I(polygons, s, c, i);
 
       draw_line(x0,y0,x1,y1,s,c);
 
@@ -342,14 +345,6 @@ void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M
 
     d1 = (Tx - Mx)/(Ty - My);
 
-    /*
-    if(d0>0){
-      x0 = Mx;
-    }else{
-      x1 = Mx;
-    }
-    */
-
     int colors[5] = {0,64,128,192,255};
     while(y0 <= Ty){
       /*
@@ -357,7 +352,7 @@ void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
       */
-      //c = calculate_I(polygons, s, c, i);
+      c = calculate_I(polygons, s, c, i);
 
       draw_line(x0,y0,x1,y1,s,c);
 
@@ -399,6 +394,8 @@ void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
       */
+      c = calculate_I(polygons, s, c, i);
+      
       d0 = (Tx - x0)/(Ty - y0);
       if(By==My){
 	d1 = (Tx - x1)/(Ty - y1);
@@ -421,31 +418,14 @@ void move_points(struct matrix *polygons, screen s, color c, int i, int T, int M
       }else if(x1 > Rx){
 	x1 = Rx;
       }
-      /*
-      if(x0 < Lx){
-	printf("x0 too far left\n");
-	printf("  Lx:%d, Mx:%d, Rx:%d, x0:%f\n",Lx,Mx,Rx,x0);
-      }else if(x0 > Rx){
-	printf("x0 too far right\n");
-	printf("  Lx:%d, Mx:%d, Rx:%d, x0:%f\n",Lx,Mx,Rx,x0);
-      }
-
-      if(x1 < Lx){
-	printf("x1 too far left\n");
-	printf("  Lx:%d, Mx:%d, Rx:%d, x1:%f\n",Lx,Mx,Rx,x1);
-      }else if(x1 > Rx){
-	printf("x1 too far right\n");
-	printf("  Lx:%d, Mx:%d, Rx:%d, x1:%f\n",Lx,Mx,Rx,x1);
-      }
-      */
-
-      //draw_line(x0,y0,x1,y1,s,c);
     }
   }
 }
 
 void move_points_z(struct matrix *polygons, screen s, color c, int i, int T, int M, int B){
   float x0, y0, z0, x1, y1, z1, d0, d1, d0z, d1z, Tx, Ty, Tz, Mx, My, Mz, Bx, By, Bz;
+
+  //printf("here!");
 
   x0 = polygons->m[0][i+B];
   y0 = polygons->m[1][i+B];
@@ -482,13 +462,18 @@ void move_points_z(struct matrix *polygons, screen s, color c, int i, int T, int
   if( (By < My) && (My < Ty) ){
 
     d1 = (Mx - Bx)/(My - By);
+    d1z = (Mz - Bz)/(My - By);
     while(y0 < My){
+      /*
       int colors[5] = {0,64,128,192,255};
       c.red = colors[i%5];
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
+      */
+      c = calculate_I(polygons, s, c, i);
 
       draw_line_z(x0,y0,z0,x1,y1,z1,s,c);
+      //draw_line(x0,y0,x1,y1,s,c);
 
       d0 = (Tx - x0)/(Ty - y0);
       d1 = (Mx - x1)/(My - y1);
@@ -524,9 +509,12 @@ void move_points_z(struct matrix *polygons, screen s, color c, int i, int T, int
 
     int colors[5] = {0,64,128,192,255};
     while(y0 <= Ty){
+      /*
       c.red = colors[i%5];
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
+      */
+      c = calculate_I(polygons, s, c, i);
 
       draw_line_z(x0,y0,z0,x1,y1,z1,s,c);
 
@@ -573,10 +561,14 @@ void move_points_z(struct matrix *polygons, screen s, color c, int i, int T, int
       printf("STRAIGHT LINE\n");
     }
     while(y0 <= Ty){
+      /*
       int colors[5] = {0,64,128,192,255};
       c.red = colors[i%5];
       c.blue = colors[(i+1)%5];
       c.green = colors[(i-1)%5];
+      */
+      c = calculate_I(polygons, s, c, i);
+
       d0 = (Tx - x0)/(Ty - y0);
       d0z = (Tz - z0)/(Ty - y0);
       if(By==My){
@@ -589,6 +581,8 @@ void move_points_z(struct matrix *polygons, screen s, color c, int i, int T, int
       draw_line_z(x0,y0,z0,x1,y1,z1,s,c);
       x0+=d0;
       x1+=d1;
+      z0+=d0z;
+      z1+=d1z;
       y0++;
       y1++;
 
@@ -759,7 +753,7 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
 		 polygons->m[1][i],
 		 s, c);
       */
-      c = calculate_I(polygons, s, c, i);
+      //c = calculate_I(polygons, s, c, i);
       scanline_convert(polygons, s, c, i);
       //printf("Finished i:%d, total:%d\n",i,polygons->lastcol-2);
     }
@@ -1316,7 +1310,7 @@ void draw_lines( struct matrix * points, screen s, color c) {
 
 
 void draw_line(int x0, int y0, int x1, int y1, screen s, color c) {
- 
+
   int x, y, d, dx, dy;
 
   x = x0;
@@ -1422,13 +1416,16 @@ void draw_line(int x0, int y0, int x1, int y1, screen s, color c) {
 }
 
 void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color c) {
-  int x, y, z, d, dd, dx, dy, dz;
+ 
+  double zees[XRES][YRES];
+  int z_x,z_y;
+  int x, y, z, d, dx, dy, dz, dd;
 
   x = x0;
   y = y0;
   z = z0;
   
-  //swap points so we're always drawing left to right
+  //swap points so we're always draing left to right
   if ( x0 > x1 ) {
     x = x1;
     y = y1;
@@ -1449,21 +1446,35 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
     //slope < 1: Octant 1 (5)
     if ( dx > dy ) {
       d = dy - ( dx / 2 );
-      dd = dy - ( dz / 2 );
+      if( dz > 0){
+	dd = dy - ( dz / 2 );
+      }else{
+	dd = ( dy / 2 ) - dz;
+      }
   
       while ( x <= x1 ) {
-	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, z_values);
+
+	for(z_x=0;z_x<500;z_x++){
+	  for(z_y=0;z_y<500;z_y++){
+	    zees[z_x][z_y] = z_values[z_x][z_y];
+	  }
+	}
+	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, zees);
 
 	if ( d < 0 ) {
 	  x = x + 1;
+	  z = z + 1;
 	  d = d + dy;
-	  dd = dd + dy;
 	}
 	else {
 	  x = x + 1;
 	  y = y + 1;
 	  z = z + 1;
 	  d = d + dy - dx;
+	}
+	if( dd < 0 ){
+	  dd = dd + dy;
+	}else{
 	  dd = dd + dy - dz;
 	}
       }
@@ -1472,20 +1483,32 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
     //slope > 1: Octant 2 (6)
     else {
       d = ( dy / 2 ) - dx;
-      dd = ( dz / 2 ) - dz;
-      while ( y <= y1 ) {
 
-	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, z_values);
+      if( dz > 0){
+	dd = dy - ( dz / 2 );
+      }else{
+	dd = ( dz / 2 ) - dz;
+      }
+      while ( y <= y1 ) {
+	for(z_x=0;z_x<500;z_x++){
+	  for(z_y=0;z_y<500;z_y++){
+	    zees[z_x][z_y] = z_values[z_x][z_y];
+	  }
+	}
+	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, zees);
 	if ( d > 0 ) {
 	  y = y + 1;
 	  d = d - dx;
-	  dd = dd - dz;
 	}
 	else {
 	  y = y + 1;
 	  x = x + 1;
 	  z = z + 1;
 	  d = d + dy - dx;
+	}
+	if ( dd > 0 ){
+	  dd = dd - dz;
+	}else{
 	  dd = dd + dy - dz;
 	}
       }
@@ -1499,14 +1522,25 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
     if ( dx > abs(dy) ) {
 
       d = dy + ( dx / 2 );
-      dd = dy + ( dz/2 );
+      
+      if( dz > abs(dy) ){
+	dd = dy + ( dz / 2 );
+      }else{
+	dd =  (dy / 2) + dz;
+      }
   
       while ( x <= x1 ) {
-
-	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, z_values);
+	
+	for(z_x=0;z_x<500;z_x++){
+	  for(z_y=0;z_y<500;z_y++){
+	    zees[z_x][z_y] = z_values[z_x][z_y];
+	  }
+	}
+	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, zees);
 
 	if ( d > 0 ) {
 	  x = x + 1;
+	  z = z + 1;
 	  d = d + dy;
 	}
 	else {
@@ -1514,6 +1548,10 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
 	  y = y - 1;
 	  z = z + 1;
 	  d = d + dy + dx;
+	}
+	if ( dd > 0 ){
+	  dd = dd + dy;
+	}else{
 	  dd = dd + dy + dz;
 	}
       }
@@ -1523,11 +1561,21 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
     else {
 
       d =  (dy / 2) + dx;
-      dd = (dy/2) + dz;
-
+      
+      if( dz > abs(dy) ){
+	dd = dy + ( dz / 2 );
+      }else{
+	dd =  (dy / 2) + dz;
+      }
+      
       while ( y >= y1 ) {
-	
-	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, z_values );
+
+	for(z_x=0;z_x<500;z_x++){
+	  for(z_y=0;z_y<500;z_y++){
+	    zees[z_x][z_y] = z_values[z_x][z_y];
+	  }
+	}
+	z_values[x][YRES-1-y] = plot_z(s, c, x, y, z, zees);
 	if ( d < 0 ) {
 	  y = y - 1;
 	  d = d + dx;
@@ -1537,6 +1585,10 @@ void draw_line_z(int x0, int y0, int z0, int x1, int y1, int z1, screen s, color
 	  x = x + 1;
 	  z = z + 1;
 	  d = d + dy + dx;
+	}
+	if ( dd < 0 ){
+	  dd = dd + dz;
+	}else{
 	  dd = dd + dy + dz;
 	}
       }

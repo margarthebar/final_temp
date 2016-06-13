@@ -81,7 +81,9 @@ void plot( screen s, color c, int x, int y) {
     s[x][newy] = c;
 }
 
-double plot_z( screen s, color c, int x, int y, int z, double **z_values) {
+// double **z_values
+
+double plot_z( screen s, color c, int x, int y, int z, double z_values[XRES][YRES]) {
   int newy = YRES - 1 - y;
   if ( x >= 0 && x < XRES && newy >=0 && newy < YRES && z_values[x][newy]<=z){
     s[x][newy] = c;

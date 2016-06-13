@@ -405,8 +405,8 @@ void my_main( int polygons ) {
 		    step);
 	//apply the current top origin
 	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	//draw_polygons_z( tmp, t, g );
+	//draw_polygons( tmp, t, g );
+	draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 
@@ -418,8 +418,8 @@ void my_main( int polygons ) {
 		   op[i].op.torus.r1,
 		   step);
 	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	//draw_polygons_z( tmp, t, g );
+	//draw_polygons( tmp, t, g );
+	draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 
@@ -431,8 +431,8 @@ void my_main( int polygons ) {
 		 op[i].op.box.d1[1],
 		 op[i].op.box.d1[2]);
 	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	//draw_polygons_z( tmp, t, g );
+	//draw_polygons( tmp, t, g );
+	draw_polygons_z( tmp, t, g );
 	tmp->lastcol = 0;
 	break;
 

@@ -1,0 +1,24 @@
+push
+//light f 1 2 3 4 5 6
+light f 250 250 -150 255 255 255
+//ambient 100 100 100
+//ambient 10 29 30
+ambient 64 171 171
+//ambient 100 0 0
+//constants MYLIGHTS 2 3 4 5 6 7 8 9 10
+//constants MYLIGHTS 0.5 0.5 0 0 0 0 0 0 0
+//constants MYLIGHTS 0 0 1 0 0 1 0 0 1
+//constants MYLIGHTS 0 1 0 0 1 0 0 1 0
+//constants MYLIGHTS 1 0 0 1 0 0 1 0 0
+//constants MYLGIHTS 0.25 0.25 0.50 0.25 0.25 0.50 0.25 0.25 0.50
+//constants MYLIGHTS 0.40 0.20 0.40 0.40 0.20 0.40 0.40 0.20 0.40
+//constants MYLIGHTS 0.50 0.50 0 0.50 0.50 0 0.50 0.50 0
+constants MYLIGHTS 0.33 0.67 0 0.33 0.67 0 0.33 0.67 0
+//constants MYLIGHTS 0.25 0.50 0.25 0.25 0.50 0.25 0.25 0.50 0.25
+//constants MYLIGHTS 0.67 0.33 0 0.67 0.33 0 0.67 0.33 0
+push
+sphere 0 0 0 10
+move 250 250 0
+//box 0 0 0 100 100 100
+sphere 0 0 0 100
+save lighting_test.png
